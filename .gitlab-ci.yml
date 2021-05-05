@@ -1,0 +1,50 @@
+variables:
+  GIT_SSL_NO_VERIFY: 1
+  GIT_SUBMODULE_STRATEGY: none
+  GIT_STRATEGY: clone
+  GIT_CHECKOUT: "true"
+  http_proxy: "http://proxy-rie.http.insee.fr:8080"
+  https_proxy: "http://proxy-rie.http.insee.fr:8080"
+  no_proxy: "insee.test,insee.fr,insee.eu,insee.intra,localhost"
+
+stages:
+  - before
+  - build
+  - test
+  - deploy
+
+build-opensource:
+  stage: before
+  tags:
+    - maven-jdk11
+  script:
+    - |
+      git submodule init
+      git submodule update
+      git submodule foreach git reset --hard HEAD
+      git submodule foreach git clean -f -d
+      git submodule foreach git pull origin main
+    - cd ./appli-opensource && mvn install
+  only:
+    - master
+    - schedules
+  artifacts:
+    untracked: true
+    expire_in: 1 hour
+    paths:
+      - "./"
+
+package:java:
+  stage: build
+  tags:
+    - maven-jdk11
+  script:
+    - mvn package
+  only:
+    - master
+    - schedules
+  artifacts:
+    untracked: true
+    expire_in: 1 hour
+    paths:
+      - "./"

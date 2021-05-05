@@ -1,0 +1,3 @@
+[submodule "appli-opensource"]
+	path = appli-opensource
+	url = https://github.com/Donatien26/appli-opensource
